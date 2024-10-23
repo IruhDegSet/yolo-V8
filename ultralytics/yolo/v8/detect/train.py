@@ -55,7 +55,7 @@ class DetectionTrainer(BaseTrainer):
         self.model.nc = self.data["nc"]  # attach number of classes to model
         self.model.names = self.data["names"]  # attach class names to model
         self.model.args = self.args  # attach hyperparameters to model
-        # TODO: self.model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device) * nc
+        self.model.class_weights = self.data['class_weights']
 
     def get_model(self, cfg=None, weights=None, verbose=True):
         model = DetectionModel(cfg, ch=3, nc=self.data["nc"], verbose=verbose)
@@ -113,7 +113,8 @@ class Loss:
         h = model.args  # hyperparameters
 
         m = model.model[-1]  # Detect() module
-        self.bce = nn.BCEWithLogitsLoss(reduction='none')
+        print(model.class_weights)
+        self.bce = nn.BCEWithLogitsLoss(reduction='none', pos_weights= model.class_weights)
         self.hyp = h
         self.stride = m.stride  # model strides
         self.nc = m.nc  # number of classes
